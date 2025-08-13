@@ -1,390 +1,658 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Трекер состояния</title>
-  <style>
-    :root {
-      --bg:#0b0f14;
-      --panel:#121821;
-      --muted:#8aa0b4;
-      --text:#e7eef6;
-      --accent:#4aa3ff;
-      --accent-2:#5cd6c8;
-      --danger:#ff7575;
-      --ok:#7bd87b;
-      --radius:14px;
-      --shadow:0 6px 20px rgba(0,0,0,.35);
-    }
-    * { box-sizing:border-box }
-    body {
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-      color:var(--text);
-      background: linear-gradient(180deg, #0b0f14 0%, #0c121a 100%);
-      min-height:100dvh;
-      display:flex; flex-direction:column; gap:12px;
-    }
-    header {
-      position:sticky; top:0; z-index:5;
-      background:rgba(11,15,20,.6); backdrop-filter:saturate(1.2) blur(16px);
-      padding:12px 16px;
-      display:flex; align-items:center; justify-content:space-between; gap:8px;
-      border-bottom:1px solid #1b2430;
-    }
-    .title { font-weight:700; letter-spacing:.2px }
-    .nav { display:flex; gap:8px; align-items:center }
-    button {
-      appearance:none; border:0; cursor:pointer; color:var(--text);
-      background:var(--panel); padding:10px 12px; border-radius:10px;
-      box-shadow:var(--shadow);
-    }
-    button.ghost { background:transparent; box-shadow:none; border:1px solid #1e2733 }
-    button.primary { background:linear-gradient(135deg, var(--accent) 0%, #6cc3ff 100%) ; color:#07121f }
-    button.warn { background:linear-gradient(135deg, var(--danger), #ff9a9a) ; color:#2a0b0b }
-    main { padding:12px 12px 24px }
-    .calendar {
-      background:var(--panel); border-radius:var(--radius); padding:12px;
-      box-shadow:var(--shadow);
-    }
-    .cal-head {
-      display:flex; align-items:center; justify-content:space-between; gap:8px;
-      padding:4px 4px 12px; border-bottom:1px solid #1b2430; margin-bottom:12px;
-    }
-    .cal-head h2 { margin:0; font-size:clamp(16px, 4vw, 22px) }
-    .grid {
-      display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;
-    }
-    .dow { color:var(--muted); font-size:12px; text-align:center; padding:6px 0 }
-    .day {
-      position:relative; min-height:44px; padding:6px; border-radius:10px;
-      background:#0f1620; border:1px solid #1a222e;
-      display:flex; align-items:flex-start; justify-content:flex-start;
-      font-size:13px;
-      transition:transform .08s ease;
-      touch-action:manipulation;
-    }
-    .day:hover { transform:translateY(-1px) }
-    .day.out { opacity:.4 }
-    .day.today { border-color:var(--accent); box-shadow:0 0 0 1px rgba(74,163,255,.25) inset }
-    .badge {
-      position:absolute; right:6px; bottom:6px; width:8px; height:8px; border-radius:50%;
-      background:var(--accent-2);
-      opacity:.0; transform:scale(.7); transition:opacity .15s, transform .15s;
-    }
-    .day.has .badge { opacity:1; transform:scale(1) }
-    .legend { display:flex; gap:8px; align-items:center; color:var(--muted); font-size:12px; padding:6px 0 0 2px }
-    /* Sheet */
-    .sheet {
-      position:fixed; left:0; right:0; bottom:0; z-index:10;
-      background:var(--panel); border-top-left-radius:18px; border-top-right-radius:18px;
-      box-shadow:0 -12px 30px rgba(0,0,0,.45);
-      transform:translateY(110%); transition:transform .22s ease;
-      max-height:88dvh; display:flex; flex-direction:column;
-    }
-    .sheet.show { transform:translateY(0) }
-    .sheet header { position:sticky; top:0; background:transparent; border:0; padding:12px 16px }
-    .sheet .content { padding:8px 16px 120px; overflow:auto }
-    .row { display:grid; grid-template-columns:120px 1fr; gap:12px; align-items:center; padding:8px 0 }
-    .row label { color:var(--muted); font-size:14px }
-    input[type="range"] { width:100% }
-    input[type="number"] {
-      width:100%; padding:10px 12px; border-radius:10px; border:1px solid #1b2430;
-      background:#0e1520; color:var(--text)
-    }
-    textarea {
-      width:100%; min-height:72px; resize:vertical; padding:10px 12px;
-      border-radius:10px; border:1px solid #1b2430; background:#0e1520; color:var(--text)
-    }
-    .sheet .footer {
-      position:fixed; left:0; right:0; bottom:0; padding:12px; background:rgba(11,15,20,.85); backdrop-filter:blur(8px);
-      display:flex; gap:8px; border-top:1px solid #1b2430;
-    }
-    .footer button { flex:1 }
-    .pill {
-      display:inline-flex; align-items:center; gap:6px;
-      background:#0e1520; border:1px solid #1b2430; color:var(--muted);
-      padding:6px 10px; border-radius:999px; font-size:12px;
-    }
-    .kpis { display:flex; gap:8px; flex-wrap:wrap; padding:6px 0 10px }
-    .sr-only { position:absolute; left:-9999px }
-    /* Small */
-    @media (max-width:520px) {
-      .row { grid-template-columns:1fr; }
-    }
-  </style>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Трекер состояния</title>
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --panel: #121821;
+            --muted: #8aa0b4;
+            --text: #e7eef6;
+            --accent: #4aa3ff;
+            --accent-2: #5cd6c8;
+            --danger: #ff7575;
+            --ok: #7bd87b;
+            --radius: 14px;
+            --shadow: 0 6px 20px rgba(0, 0, 0, .35);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+            color: var(--text);
+            background: linear-gradient(180deg, #0b0f14 0%, #0c121a 100%);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: rgba(11, 15, 20, .6);
+            backdrop-filter: saturate(1.2) blur(16px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            border-bottom: 1px solid #1b2430;
+        }
+
+        .title {
+            font-weight: 700;
+            letter-spacing: .2px
+        }
+
+        .nav {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        button {
+            appearance: none;
+            border: 0;
+            cursor: pointer;
+            color: var(--text);
+            background: var(--panel);
+            padding: 10px 12px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        button.ghost {
+            background: transparent;
+            box-shadow: none;
+            border: 1px solid #1e2733
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #6cc3ff 100%);
+            color: #07121f
+        }
+
+        button.warn {
+            background: linear-gradient(135deg, var(--danger), #ff9a9a);
+            color: #2a0b0b
+        }
+
+        main {
+            padding: 12px 12px 24px
+        }
+
+        .calendar {
+            background: var(--panel);
+            border-radius: var(--radius);
+            padding: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .cal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 4px 4px 12px;
+            border-bottom: 1px solid #1b2430;
+            margin-bottom: 12px;
+        }
+
+        .cal-head h2 {
+            margin: 0;
+            font-size: clamp(16px, 4vw, 22px)
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .dow {
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+            padding: 6px 0
+        }
+
+        .day {
+            position: relative;
+            min-height: 44px;
+            padding: 6px;
+            border-radius: 10px;
+            background: #0f1620;
+            border: 1px solid #1a222e;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            font-size: 13px;
+            transition: transform .08s ease;
+            touch-action: manipulation;
+        }
+
+        .day:hover {
+            transform: translateY(-1px)
+        }
+
+        .day.out {
+            opacity: .4
+        }
+
+        .day.today {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(74, 163, 255, .25) inset
+        }
+
+        .badge {
+            position: absolute;
+            right: 6px;
+            bottom: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-2);
+            opacity: .0;
+            transform: scale(.7);
+            transition: opacity .15s, transform .15s;
+        }
+
+        .day.has .badge {
+            opacity: 1;
+            transform: scale(1)
+        }
+
+        .legend {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 6px 0 0 2px
+        }
+
+        /* Sheet */
+        .sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+            background: var(--panel);
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            box-shadow: 0 -12px 30px rgba(0, 0, 0, .45);
+            transform: translateY(110%);
+            transition: transform .22s ease;
+            max-height: 88dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sheet.show {
+            transform: translateY(0)
+        }
+
+        .sheet header {
+            position: sticky;
+            top: 0;
+            background: transparent;
+            border: 0;
+            padding: 12px 16px
+        }
+
+        .sheet .content {
+            padding: 8px 16px 120px;
+            overflow: auto
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns:120px 1fr;
+            gap: 12px;
+            align-items: center;
+            padding: 8px 0
+        }
+
+        .row label {
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        input[type="range"] {
+            width: 100%
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #1b2430;
+            background: #0e1520;
+            color: var(--text)
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 72px;
+            resize: vertical;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #1b2430;
+            background: #0e1520;
+            color: var(--text)
+        }
+
+        .sheet .footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 12px;
+            background: rgba(11, 15, 20, .85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid #1b2430;
+        }
+
+        .footer button {
+            flex: 1
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #0e1520;
+            border: 1px solid #1b2430;
+            color: var(--muted);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+        }
+
+        .kpis {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 6px 0 10px
+        }
+
+        .sr-only {
+            position: absolute;
+            left: -9999px
+        }
+
+        @media (max-width: 520px) {
+            .row {
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
+<header>
     <div class="title">Трекер состояния</div>
     <div class="nav">
-      <button id="btnToday" class="ghost" title="К сегодня">Сегодня</button>
-      <button id="btnExport" class="ghost" title="Экспорт JSON">Экспорт</button>
-      <button id="btnImport" class="ghost" title="Импорт JSON">Импорт</button>
-      <input id="importFile" type="file" accept="application/json" class="sr-only" />
+        <button id="btnToday" class="ghost" title="К сегодня">Сегодня</button>
+        <button id="btnExport" class="ghost" title="Экспорт JSON">Экспорт</button>
+        <button id="btnImport" class="ghost" title="Импорт JSON">Импорт</button>
+        <input id="importFile" type="file" accept="application/json" class="sr-only"/>
     </div>
-  </header>
+</header>
 
-  <main>
+<main>
     <section class="calendar" aria-label="Календарь">
-      <div class="cal-head">
-        <div style="display:flex; gap:6px; align-items:center">
-          <button id="prev">‹</button>
-          <h2 id="monthLabel">Месяц</h2>
-          <button id="next">›</button>
+        <div class="cal-head">
+            <div style="display:flex; gap:6px; align-items:center">
+                <button id="prev">‹</button>
+                <h2 id="monthLabel">Месяц</h2>
+                <button id="next">›</button>
+            </div>
+            <div class="legend">
+                <span class="pill"><span
+                        style="width:8px;height:8px;border-radius:50%;background:var(--accent-2);display:inline-block"></span> - есть запись</span>
+            </div>
         </div>
-        <div class="legend">
-          <span class="pill"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent-2);display:inline-block"></span> - есть запись</span>
-        </div>
-      </div>
-      <div class="grid" id="dow"></div>
-      <div class="grid" id="days"></div>
+        <div class="grid" id="dow"></div>
+        <div class="grid" id="days"></div>
     </section>
-  </main>
+</main>
 
-  <!-- Нижняя шторка-редактор -->
-  <div class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-label="Редактор дня">
+<!-- Нижняя шторка-редактор -->
+<div class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-label="Редактор дня">
     <header>
-      <div style="display:flex; align-items:center; justify-content:space-between; width:100%">
-        <div id="sheetDate" class="title">Дата</div>
-        <button id="closeSheet" class="ghost">Закрыть</button>
-      </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; width:100%">
+            <div id="sheetDate" class="title">Дата</div>
+            <button id="closeSheet" class="ghost">Закрыть</button>
+        </div>
     </header>
     <div class="content">
-      <div class="kpis" id="kpis"></div>
+        <div class="kpis" id="kpis"></div>
 
-      <div class="row">
-        <label for="clarity">Ясность</label>
-        <input id="clarity" type="range" min="0" max="10" step="1" />
-      </div>
-      <div class="row">
-        <label for="fatigue">Усталость</label>
-        <input id="fatigue" type="range" min="0" max="10" step="1" />
-      </div>
-      <div class="row">
-        <label for="sleep">Сон-часов</label>
-        <input id="sleep" type="number" min="0" max="24" step="0.5" placeholder="например 7.5" />
-      </div>
-      <div class="row">
-        <label for="energy">Энергия</label>
-        <input id="energy" type="range" min="0" max="10" step="1" />
-      </div>
-      <div class="row">
-        <label for="notes">Заметка</label>
-        <textarea id="notes" placeholder="что повлияло сегодня"></textarea>
-      </div>
+        <div class="row">
+            <label for="clarity">Ясность</label>
+            <input id="clarity" type="range" min="0" max="10" step="1"/>
+        </div>
+        <div class="row">
+            <label for="fatigue">Усталость</label>
+            <input id="fatigue" type="range" min="0" max="10" step="1"/>
+        </div>
+        <div class="row">
+            <label for="sleep">Сон-часов</label>
+            <input id="sleep" type="number" min="0" max="24" step="0.5" placeholder="например 7.5"/>
+        </div>
+        <div class="row">
+            <label for="energy">Энергия</label>
+            <input id="energy" type="range" min="0" max="10" step="1"/>
+        </div>
+        <div class="row">
+            <label for="notes">Заметка</label>
+            <textarea id="notes" placeholder="что повлияло сегодня"></textarea>
+        </div>
     </div>
     <div class="footer">
-      <button id="delete" class="warn">Удалить запись</button>
-      <button id="save" class="primary">Сохранить</button>
+        <button id="delete" class="warn">Удалить запись</button>
+        <button id="save" class="primary">Сохранить</button>
     </div>
-  </div>
+</div>
 
-  <script>
+<script>
     const SKEY = 'wellness-tracker-v1';
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
 
+    // --- дата и форматирование (локальные ключи без UTC-сдвига)
+    function toISO(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+    }
+
+    function humanDate(iso) {
+        const [y, m, dd] = iso.split('-').map(Number);
+        const f = new Intl.DateTimeFormat('ru-RU', {day: '2-digit', month: 'long', year: 'numeric', weekday: 'short'});
+        return f.format(new Date(y, m - 1, dd));
+    }
+
+    // --- миграция старых UTC-ключей (запускается 1 раз)
+    function migrateFromUTCKeys(obj) {
+        const out = {};
+        let movedAny = false;
+
+        for (const k of Object.keys(obj)) {
+            if (k === '__tzFixedV1') {
+                out[k] = obj[k];
+                continue;
+            }
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) {
+                out[k] = obj[k];
+                continue;
+            }
+
+            const localMidnight = new Date(k + 'T00:00:00');
+            const offset = localMidnight.getTimezoneOffset(); // минуты: UTC - Local
+            const shiftDays = offset < 0 ? 1 : offset > 0 ? -1 : 0; // UTC+? -> +1; UTC-? -> -1
+
+            if (shiftDays === 0) {
+                out[k] = obj[k];
+                continue;
+            }
+
+            const moved = new Date(
+                localMidnight.getFullYear(),
+                localMidnight.getMonth(),
+                localMidnight.getDate() + shiftDays
+            );
+            const newKey = `${moved.getFullYear()}-${String(moved.getMonth() + 1).padStart(2, '0')}-${String(moved.getDate()).padStart(2, '0')}`;
+
+            if (!(newKey in out)) {
+                out[newKey] = obj[k];
+                movedAny = true;
+            } else {
+                out[k] = obj[k];
+            } // не перетираем при коллизии
+        }
+
+        if (movedAny) out.__tzFixedV1 = true;
+        return out;
+    }
+
+    function loadAll() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(SKEY)) || {};
+            if (!raw.__tzFixedV1) {
+                const fixed = migrateFromUTCKeys(raw);
+                if (!fixed.__tzFixedV1) fixed.__tzFixedV1 = true; // даже если сдвигов не было
+                localStorage.setItem(SKEY, JSON.stringify(fixed));
+                return fixed;
+            }
+            return raw;
+        } catch {
+            return {}
+        }
+    }
+
+    function saveAll() {
+        localStorage.setItem(SKEY, JSON.stringify(state.data));
+    }
+
+    // --- состояние
     const state = {
-      current: new Date(),
-      editingDate: null,
-      data: loadAll()
+        current: new Date(),
+        editingDate: null,
+        data: loadAll()
     };
 
-    const dow = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+    const dow = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
     // init
     renderDow();
     renderCalendar();
 
     // events
-    $('#prev').addEventListener('click', () => { shiftMonth(-1) });
-    $('#next').addEventListener('click', () => { shiftMonth(1) });
-    $('#btnToday').addEventListener('click', () => { state.current = new Date(); renderCalendar() });
+    $('#prev').addEventListener('click', () => {
+        shiftMonth(-1)
+    });
+    $('#next').addEventListener('click', () => {
+        shiftMonth(1)
+    });
+    $('#btnToday').addEventListener('click', () => {
+        state.current = new Date();
+        renderCalendar()
+    });
     $('#closeSheet').addEventListener('click', closeSheet);
     $('#save').addEventListener('click', saveEntry);
     $('#delete').addEventListener('click', deleteEntry);
 
     $('#btnExport').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(state.data, null, 2)], { type:'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'wellness-data.json'; a.click();
-      URL.revokeObjectURL(url);
+        const blob = new Blob([JSON.stringify(state.data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'wellness-data.json';
+        a.click();
+        URL.revokeObjectURL(url);
     });
     $('#btnImport').addEventListener('click', () => $('#importFile').click());
     $('#importFile').addEventListener('change', async (e) => {
-      const file = e.target.files[0]; if (!file) return;
-      const text = await file.text();
-      try {
-        const obj = JSON.parse(text);
-        if (typeof obj !== 'object' || Array.isArray(obj)) throw new Error('bad');
-        state.data = obj;
-        saveAll();
-        renderCalendar();
-        alert('Импорт завершён');
-      } catch {
-        alert('Некорректный JSON');
-      } finally {
-        e.target.value = '';
-      }
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        try {
+            const obj = JSON.parse(text);
+            if (typeof obj !== 'object' || Array.isArray(obj)) throw new Error('bad');
+
+            // прогоняем импортируемые данные через миграцию при необходимости
+            const fixed = !obj.__tzFixedV1 ? migrateFromUTCKeys(obj) : obj;
+            if (!fixed.__tzFixedV1) fixed.__tzFixedV1 = true;
+
+            state.data = fixed;
+            saveAll();
+            renderCalendar();
+            alert('Импорт завершён');
+        } catch {
+            alert('Некорректный JSON');
+        } finally {
+            e.target.value = '';
+        }
     });
 
-    function renderDow(){
-      const c = $('#dow'); c.innerHTML = '';
-      dow.forEach(d => {
-        const el = document.createElement('div');
-        el.className = 'dow';
-        el.textContent = d;
-        c.appendChild(el);
-      });
+    // --- рендер календаря
+    function renderDow() {
+        const c = $('#dow');
+        c.innerHTML = '';
+        dow.forEach(d => {
+            const el = document.createElement('div');
+            el.className = 'dow';
+            el.textContent = d;
+            c.appendChild(el);
+        });
     }
 
-    function renderCalendar(){
-      const y = state.current.getFullYear();
-      const m = state.current.getMonth();
-      const monthStart = new Date(y, m, 1);
-      const monthEnd = new Date(y, m + 1, 0);
-      const startOffset = ( (monthStart.getDay() + 6) % 7 ); // make Monday=0
-      const daysInMonth = monthEnd.getDate();
+    function renderCalendar() {
+        const y = state.current.getFullYear();
+        const m = state.current.getMonth();
+        const monthStart = new Date(y, m, 1);
+        const monthEnd = new Date(y, m + 1, 0);
+        const startOffset = ((monthStart.getDay() + 6) % 7); // Monday=0
+        const daysInMonth = monthEnd.getDate();
 
-      // label
-      $('#monthLabel').textContent = monthLabel(y, m);
+        $('#monthLabel').textContent = monthLabel(y, m);
 
-      const grid = $('#days');
-      grid.innerHTML = '';
+        const grid = $('#days');
+        grid.innerHTML = '';
 
-      // prev month tail
-      const prevMonthEnd = new Date(y, m, 0).getDate();
-      for (let i = startOffset; i > 0; i--) {
-        const d = prevMonthEnd - i + 1;
-        grid.appendChild(dayCell(new Date(y, m - 1, d), true));
-      }
-      // current
-      for (let d = 1; d <= daysInMonth; d++) {
-        grid.appendChild(dayCell(new Date(y, m, d), false));
-      }
-      // next month head to fill 6 rows max
-      const total = grid.children.length;
-      const remainder = total % 7 === 0 ? 0 : 7 - (total % 7);
-      for (let d = 1; d <= remainder; d++) {
-        grid.appendChild(dayCell(new Date(y, m + 1, d), true));
-      }
-    }
-
-    function dayCell(date, out){
-      const iso = toISO(date);
-      const div = document.createElement('button');
-      div.type = 'button';
-      div.className = 'day' + (out ? ' out' : '');
-      if (isToday(date)) div.classList.add('today');
-
-      const dayNum = document.createElement('div');
-      dayNum.textContent = date.getDate();
-      div.appendChild(dayNum);
-
-      const badge = document.createElement('span');
-      badge.className = 'badge';
-      div.appendChild(badge);
-
-      if (state.data[iso]) div.classList.add('has');
-
-      div.addEventListener('click', () => openSheet(iso));
-      return div;
-    }
-
-    function openSheet(isoDate){
-      state.editingDate = isoDate;
-      $('#sheetDate').textContent = humanDate(isoDate);
-      const entry = state.data[isoDate] || {};
-      $('#clarity').value = entry.clarity ?? 5;
-      $('#fatigue').value = entry.fatigue ?? 5;
-      $('#sleep').value = entry.sleep ?? '';
-      $('#energy').value = entry.energy ?? 5;
-      $('#notes').value = entry.notes ?? '';
-
-      // quick KPIs pills
-      const k = $('#kpis'); k.innerHTML = '';
-      const pairs = [
-        ['Ясность', entry.clarity ?? 5],
-        ['Усталость', entry.fatigue ?? 5],
-        ['Сон', entry.sleep ?? ''],
-        ['Энергия', entry.energy ?? 5],
-      ];
-      pairs.forEach(([name,val]) => {
-        const el = document.createElement('span');
-        el.className = 'pill';
-        el.textContent = `${name}: ${val === '' ? '—' : val}`;
-        k.appendChild(el);
-      });
-
-      const sheet = $('#sheet');
-      sheet.classList.add('show');
-      sheet.setAttribute('aria-hidden','false');
-    }
-
-    function closeSheet(){
-      $('#sheet').classList.remove('show');
-      $('#sheet').setAttribute('aria-hidden','true');
-      // refresh pills next open
-    }
-
-    function saveEntry(){
-      const iso = state.editingDate;
-      const entry = {
-        clarity: Number($('#clarity').value),
-        fatigue: Number($('#fatigue').value),
-        sleep: $('#sleep').value === '' ? null : Number($('#sleep').value),
-        energy: Number($('#energy').value),
-        notes: $('#notes').value.trim()
-      };
-      state.data[iso] = entry;
-      saveAll();
-      renderCalendar();
-      closeSheet();
-    }
-
-    function deleteEntry(){
-      const iso = state.editingDate;
-      if (state.data[iso]) {
-        if (confirm('Удалить запись за ' + humanDate(iso) + '?')) {
-          delete state.data[iso];
-          saveAll();
-          renderCalendar();
-          closeSheet();
+        // хвост предыдущего месяца
+        const prevMonthEnd = new Date(y, m, 0).getDate();
+        for (let i = startOffset; i > 0; i--) {
+            const d = prevMonthEnd - i + 1;
+            grid.appendChild(dayCell(new Date(y, m - 1, d), true));
         }
-      } else {
+        // текущий месяц
+        for (let d = 1; d <= daysInMonth; d++) {
+            grid.appendChild(dayCell(new Date(y, m, d), false));
+        }
+        // голова следующего, чтобы кратно 7
+        const total = grid.children.length;
+        const remainder = total % 7 === 0 ? 0 : 7 - (total % 7);
+        for (let d = 1; d <= remainder; d++) {
+            grid.appendChild(dayCell(new Date(y, m + 1, d), true));
+        }
+    }
+
+    function dayCell(date, out) {
+        const iso = toISO(date);
+        const div = document.createElement('button');
+        div.type = 'button';
+        div.className = 'day' + (out ? ' out' : '');
+        if (isToday(date)) div.classList.add('today');
+
+        const dayNum = document.createElement('div');
+        dayNum.textContent = date.getDate();
+        div.appendChild(dayNum);
+
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        div.appendChild(badge);
+
+        if (state.data[iso]) div.classList.add('has');
+
+        div.addEventListener('click', () => openSheet(iso));
+        return div;
+    }
+
+    // --- шторка
+    function openSheet(isoDate) {
+        state.editingDate = isoDate;
+        $('#sheetDate').textContent = humanDate(isoDate);
+        const entry = state.data[isoDate] || {};
+        $('#clarity').value = entry.clarity ?? 5;
+        $('#fatigue').value = entry.fatigue ?? 5;
+        $('#sleep').value = entry.sleep ?? '';
+        $('#energy').value = entry.energy ?? 5;
+        $('#notes').value = entry.notes ?? '';
+
+        const k = $('#kpis');
+        k.innerHTML = '';
+        const pairs = [
+            ['Ясность', entry.clarity ?? 5],
+            ['Усталость', entry.fatigue ?? 5],
+            ['Сон', entry.sleep ?? ''],
+            ['Энергия', entry.energy ?? 5],
+        ];
+        pairs.forEach(([name, val]) => {
+            const el = document.createElement('span');
+            el.className = 'pill';
+            el.textContent = `${name}: ${val === '' ? '—' : val}`;
+            k.appendChild(el);
+        });
+
+        const sheet = $('#sheet');
+        sheet.classList.add('show');
+        sheet.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSheet() {
+        $('#sheet').classList.remove('show');
+        $('#sheet').setAttribute('aria-hidden', 'true');
+    }
+
+    // --- CRUD
+    function saveEntry() {
+        const iso = state.editingDate;
+        const entry = {
+            clarity: Number($('#clarity').value),
+            fatigue: Number($('#fatigue').value),
+            sleep: $('#sleep').value === '' ? null : Number($('#sleep').value),
+            energy: Number($('#energy').value),
+            notes: $('#notes').value.trim()
+        };
+        state.data[iso] = entry;
+        saveAll();
+        renderCalendar();
         closeSheet();
-      }
     }
 
-    function shiftMonth(delta){
-      const d = state.current;
-      state.current = new Date(d.getFullYear(), d.getMonth() + delta, 1);
-      renderCalendar();
+    function deleteEntry() {
+        const iso = state.editingDate;
+        if (state.data[iso]) {
+            if (confirm('Удалить запись за ' + humanDate(iso) + '?')) {
+                delete state.data[iso];
+                saveAll();
+                renderCalendar();
+                closeSheet();
+            }
+        } else {
+            closeSheet();
+        }
     }
 
-    function monthLabel(y,m){
-      const formatter = new Intl.DateTimeFormat('ru-RU', { month:'long', year:'numeric' });
-      return formatter.format(new Date(y, m, 1));
+    function shiftMonth(delta) {
+        const d = state.current;
+        state.current = new Date(d.getFullYear(), d.getMonth() + delta, 1);
+        renderCalendar();
     }
-    function isToday(d){
-      const t = new Date();
-      return d.getDate()===t.getDate() && d.getMonth()===t.getMonth() && d.getFullYear()===t.getFullYear();
+
+    function monthLabel(y, m) {
+        const formatter = new Intl.DateTimeFormat('ru-RU', {month: 'long', year: 'numeric'});
+        return formatter.format(new Date(y, m, 1));
     }
-    function toISO(d){ return d.toISOString().slice(0,10) }
-    function humanDate(iso){
-      const [y,m,dd] = iso.split('-').map(Number);
-      const f = new Intl.DateTimeFormat('ru-RU', { day:'2-digit', month:'long', year:'numeric', weekday:'short' });
-      return f.format(new Date(y, m-1, dd));
+
+    function isToday(d) {
+        const t = new Date();
+        return d.getDate() === t.getDate() && d.getMonth() === t.getMonth() && d.getFullYear() === t.getFullYear();
     }
-    function loadAll(){
-      try { return JSON.parse(localStorage.getItem(SKEY)) || {} } catch { return {} }
-    }
-    function saveAll(){
-      localStorage.setItem(SKEY, JSON.stringify(state.data));
-    }
-  </script>
+</script>
 </body>
 </html>
