@@ -1,375 +1,388 @@
 <!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Трекер состояния</title>
-    <style>
-        :root {
-            --bg: #0b0f14;
-            --panel: #121821;
-            --muted: #8aa0b4;
-            --text: #e7eef6;
-            --accent: #4aa3ff;
-            --accent-2: #5cd6c8;
-            --danger: #ff7575;
-            --ok: #7bd87b;
-            --radius: 14px;
-            --shadow: 0 6px 20px rgba(0, 0, 0, .35);
-        }
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Трекер состояния</title>
+  <style>
+      :root {
+          --bg: #0b0f14;
+          --panel: #121821;
+          --muted: #8aa0b4;
+          --text: #e7eef6;
+          --accent: #4aa3ff;
+          --accent-2: #5cd6c8;
+          --danger: #ff7575;
+          --ok: #7bd87b;
+          --radius: 14px;
+          --shadow: 0 6px 20px rgba(0, 0, 0, .35);
+      }
 
-        * {
-            box-sizing: border-box
-        }
+      * {
+          box-sizing: border-box
+      }
 
-        body {
-            margin: 0;
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-            color: var(--text);
-            background: linear-gradient(180deg, #0b0f14 0%, #0c121a 100%);
-            min-height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+      body {
+          margin: 0;
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+          color: var(--text);
+          background: linear-gradient(180deg, #0b0f14 0%, #0c121a 100%);
+          min-height: 100dvh;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+      }
 
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            background: rgba(11, 15, 20, .6);
-            backdrop-filter: saturate(1.2) blur(16px);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            border-bottom: 1px solid #1b2430;
-        }
+      header {
+          position: sticky;
+          top: 0;
+          z-index: 5;
+          background: rgba(11, 15, 20, .6);
+          backdrop-filter: saturate(1.2) blur(16px);
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          border-bottom: 1px solid #1b2430;
+      }
 
-        .title {
-            font-weight: 700;
-            letter-spacing: .2px
-        }
+      .title {
+          font-weight: 700;
+          letter-spacing: .2px
+      }
 
-        .nav {
-            display: flex;
-            gap: 8px;
-            align-items: center
-        }
+      .nav {
+          display: flex;
+          gap: 8px;
+          align-items: center
+      }
 
-        button {
-            appearance: none;
-            border: 0;
-            cursor: pointer;
-            color: var(--text);
-            background: var(--panel);
-            padding: 10px 12px;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-        }
+      button {
+          appearance: none;
+          border: 0;
+          cursor: pointer;
+          color: var(--text);
+          background: var(--panel);
+          padding: 10px 12px;
+          border-radius: 10px;
+          box-shadow: var(--shadow);
+      }
 
-        button.ghost {
-            background: transparent;
-            box-shadow: none;
-            border: 1px solid #1e2733
-        }
+      button.ghost {
+          background: transparent;
+          box-shadow: none;
+          border: 1px solid #1e2733
+      }
 
-        button.primary {
-            background: linear-gradient(135deg, var(--accent) 0%, #6cc3ff 100%);
-            color: #07121f
-        }
+      button.primary {
+          background: linear-gradient(135deg, var(--accent) 0%, #6cc3ff 100%);
+          color: #07121f
+      }
 
-        button.warn {
-            background: linear-gradient(135deg, var(--danger), #ff9a9a);
-            color: #2a0b0b
-        }
+      button.warn {
+          background: linear-gradient(135deg, var(--danger), #ff9a9a);
+          color: #2a0b0b
+      }
 
-        main {
-            padding: 12px 12px 24px
-        }
+      main {
+          padding: 12px 12px 24px
+      }
 
-        .calendar {
-            background: var(--panel);
-            border-radius: var(--radius);
-            padding: 12px;
-            box-shadow: var(--shadow);
-        }
+      .calendar {
+          background: var(--panel);
+          border-radius: var(--radius);
+          padding: 12px;
+          box-shadow: var(--shadow);
+      }
 
-        .cal-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 4px 4px 12px;
-            border-bottom: 1px solid #1b2430;
-            margin-bottom: 12px;
-        }
+      .cal-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          padding: 4px 4px 12px;
+          border-bottom: 1px solid #1b2430;
+          margin-bottom: 12px;
+      }
 
-        .cal-head h2 {
-            margin: 0;
-            font-size: clamp(16px, 4vw, 22px)
-        }
+      .cal-head h2 {
+          margin: 0;
+          font-size: clamp(16px, 4vw, 22px)
+      }
 
-        .grid {
-            display: grid;
-            grid-template-columns:repeat(7, 1fr);
-            gap: 6px;
-        }
+      .grid {
+          display: grid;
+          grid-template-columns:repeat(7, 1fr);
+          gap: 6px;
+      }
 
-        .dow {
-            color: var(--muted);
-            font-size: 12px;
-            text-align: center;
-            padding: 6px 0
-        }
+      .dow {
+          color: var(--muted);
+          font-size: 12px;
+          text-align: center;
+          padding: 6px 0
+      }
 
-        .day {
-            position: relative;
-            min-height: 44px;
-            padding: 6px;
-            border-radius: 10px;
-            background: #0f1620;
-            border: 1px solid #1a222e;
-            display: flex;
-            align-items: flex-start;
-            justify-content: flex-start;
-            font-size: 13px;
-            transition: transform .08s ease;
-            touch-action: manipulation;
-        }
+      .day {
+          position: relative;
+          min-height: 44px;
+          padding: 6px;
+          border-radius: 10px;
+          background: #0f1620;
+          border: 1px solid #1a222e;
+          display: flex;
+          align-items: flex-start;
+          justify-content: flex-start;
+          font-size: 13px;
+          transition: transform .08s ease;
+          touch-action: manipulation;
+      }
 
-        .day:hover {
-            transform: translateY(-1px)
-        }
+      .day:hover {
+          transform: translateY(-1px)
+      }
 
-        .day.out {
-            opacity: .4
-        }
+      .day.out {
+          opacity: .4
+      }
 
-        .day.today {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 1px rgba(74, 163, 255, .25) inset
-        }
+      .day.today {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 1px rgba(74, 163, 255, .25) inset
+      }
 
-        .badge {
-            position: absolute;
-            right: 6px;
-            bottom: 6px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent-2);
-            opacity: .0;
-            transform: scale(.7);
-            transition: opacity .15s, transform .15s;
-        }
+      .badge {
+          position: absolute;
+          right: 6px;
+          bottom: 6px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--accent-2);
+          opacity: .0;
+          transform: scale(.7);
+          transition: opacity .15s, transform .15s;
+      }
 
-        .day.has .badge {
-            opacity: 1;
-            transform: scale(1)
-        }
+      .day.has .badge {
+          opacity: 1;
+          transform: scale(1)
+      }
 
-        .legend {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            color: var(--muted);
-            font-size: 12px;
-            padding: 6px 0 0 2px
-        }
+      .legend {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          color: var(--muted);
+          font-size: 12px;
+          padding: 6px 0 0 2px
+      }
 
-        /* Sheet */
-        .sheet {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 10;
-            background: var(--panel);
-            border-top-left-radius: 18px;
-            border-top-right-radius: 18px;
-            box-shadow: 0 -12px 30px rgba(0, 0, 0, .45);
-            transform: translateY(110%);
-            transition: transform .22s ease;
-            max-height: 88dvh;
-            display: flex;
-            flex-direction: column;
-        }
+      /* Sheet */
+      .sheet {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 10;
+          background: var(--panel);
+          border-top-left-radius: 18px;
+          border-top-right-radius: 18px;
+          box-shadow: 0 -12px 30px rgba(0, 0, 0, .45);
+          transform: translateY(110%);
+          transition: transform .22s ease;
+          max-height: 88dvh;
+          display: flex;
+          flex-direction: column;
+      }
 
-        .sheet.show {
-            transform: translateY(0)
-        }
+      .sheet.show {
+          transform: translateY(0)
+      }
 
-        .sheet header {
-            position: sticky;
-            top: 0;
-            background: transparent;
-            border: 0;
-            padding: 12px 16px
-        }
+      .sheet header {
+          position: sticky;
+          top: 0;
+          background: transparent;
+          border: 0;
+          padding: 12px 16px
+      }
 
-        .sheet .content {
-            padding: 8px 16px 120px;
-            overflow: auto
-        }
+      .sheet .content {
+          padding: 8px 16px 120px;
+          overflow: auto
+      }
 
-        .row {
-            display: grid;
-            grid-template-columns:120px 1fr;
-            gap: 12px;
-            align-items: center;
-            padding: 8px 0
-        }
+      .summary {
+          background: var(--panel);
+          border-radius: var(--radius);
+          padding: 12px;
+          box-shadow: var(--shadow);
+      }
 
-        .row label {
-            color: var(--muted);
-            font-size: 14px
-        }
+      .row {
+          display: grid;
+          grid-template-columns:120px 1fr;
+          gap: 12px;
+          align-items: center;
+          padding: 8px 0
+      }
 
-        input[type="range"] {
-            width: 100%
-        }
+      .row label {
+          color: var(--muted);
+          font-size: 14px
+      }
 
-        input[type="number"] {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid #1b2430;
-            background: #0e1520;
-            color: var(--text)
-        }
+      input[type="range"] {
+          width: 100%
+      }
 
-        textarea {
-            width: 100%;
-            min-height: 72px;
-            resize: vertical;
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid #1b2430;
-            background: #0e1520;
-            color: var(--text)
-        }
+      input[type="number"] {
+          width: 100%;
+          padding: 10px 12px;
+          border-radius: 10px;
+          border: 1px solid #1b2430;
+          background: #0e1520;
+          color: var(--text)
+      }
 
-        .sheet .footer {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            padding: 12px;
-            background: rgba(11, 15, 20, .85);
-            backdrop-filter: blur(8px);
-            display: flex;
-            gap: 8px;
-            border-top: 1px solid #1b2430;
-        }
+      textarea {
+          width: 100%;
+          min-height: 72px;
+          resize: vertical;
+          padding: 10px 12px;
+          border-radius: 10px;
+          border: 1px solid #1b2430;
+          background: #0e1520;
+          color: var(--text)
+      }
 
-        .footer button {
-            flex: 1
-        }
+      .sheet .footer {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          padding: 12px;
+          background: rgba(11, 15, 20, .85);
+          backdrop-filter: blur(8px);
+          display: flex;
+          gap: 8px;
+          border-top: 1px solid #1b2430;
+      }
 
-        .pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #0e1520;
-            border: 1px solid #1b2430;
-            color: var(--muted);
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-        }
+      .footer button {
+          flex: 1
+      }
 
-        .kpis {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding: 6px 0 10px
-        }
+      .pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #0e1520;
+          border: 1px solid #1b2430;
+          color: var(--muted);
+          padding: 6px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+      }
 
-        .sr-only {
-            position: absolute;
-            left: -9999px
-        }
+      .kpis {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          padding: 6px 0 10px
+      }
 
-        @media (max-width: 520px) {
-            .row {
-                grid-template-columns:1fr;
-            }
-        }
-    </style>
+      .sr-only {
+          position: absolute;
+          left: -9999px
+      }
+
+      @media (max-width: 520px) {
+          .row {
+              grid-template-columns:1fr;
+          }
+      }
+  </style>
 </head>
 <body>
 <header>
-    <div class="title">Трекер состояния</div>
-    <div class="nav">
-        <button id="btnToday" class="ghost" title="К сегодня">Сегодня</button>
-        <button id="btnExport" class="ghost" title="Экспорт JSON">Экспорт</button>
-        <button id="btnImport" class="ghost" title="Импорт JSON">Импорт</button>
-        <input id="importFile" type="file" accept="application/json" class="sr-only"/>
-    </div>
+  <div class="title">Трекер состояния</div>
+  <div class="nav">
+    <button id="btnToday" class="ghost" title="К сегодня">Сегодня</button>
+    <button id="btnExport" class="ghost" title="Экспорт JSON">Экспорт</button>
+    <button id="btnImport" class="ghost" title="Импорт JSON">Импорт</button>
+    <input id="importFile" type="file" accept="application/json" class="sr-only"/>
+  </div>
 </header>
 
 <main>
-    <section class="calendar" aria-label="Календарь">
-        <div class="cal-head">
-            <div style="display:flex; gap:6px; align-items:center">
-                <button id="prev">‹</button>
-                <h2 id="monthLabel">Месяц</h2>
-                <button id="next">›</button>
-            </div>
-            <div class="legend">
+  <section class="calendar" aria-label="Календарь">
+    <div class="cal-head">
+      <div style="display:flex; gap:6px; align-items:center">
+        <button id="prev">‹</button>
+        <h2 id="monthLabel">Месяц</h2>
+        <button id="next">›</button>
+      </div>
+      <div class="legend">
                 <span class="pill"><span
                         style="width:8px;height:8px;border-radius:50%;background:var(--accent-2);display:inline-block"></span> - есть запись</span>
-            </div>
-        </div>
-        <div class="grid" id="dow"></div>
-        <div class="grid" id="days"></div>
-    </section>
+      </div>
+    </div>
+    <div class="grid" id="dow"></div>
+    <div class="grid" id="days"></div>
+  </section>
+  <section class="summary" aria-label="Среднее за 7 дней">
+    <div class="legend" style="justify-content:space-between; padding:0 2px 6px">
+      <div style="font-weight:600; color:var(--text)">Среднее за предыдущие 7 дней</div>
+      <div id="avgCoverage" class="pill">—</div>
+    </div>
+    <div class="kpis" id="avgKpis"></div>
+  </section>
 </main>
 
 <!-- Нижняя шторка-редактор -->
 <div class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-label="Редактор дня">
-    <header>
-        <div style="display:flex; align-items:center; justify-content:space-between; width:100%">
-            <div id="sheetDate" class="title">Дата</div>
-            <button id="closeSheet" class="ghost">Закрыть</button>
-        </div>
-    </header>
-    <div class="content">
-        <div class="kpis" id="kpis"></div>
+  <header>
+    <div style="display:flex; align-items:center; justify-content:space-between; width:100%">
+      <div id="sheetDate" class="title">Дата</div>
+      <button id="closeSheet" class="ghost">Закрыть</button>
+    </div>
+  </header>
+  <div class="content">
+    <div class="kpis" id="kpis"></div>
 
-        <div class="row">
-            <label for="clarity">Ясность</label>
-            <input id="clarity" type="range" min="0" max="10" step="1"/>
-        </div>
-        <div class="row">
-            <label for="fatigue">Усталость</label>
-            <input id="fatigue" type="range" min="0" max="10" step="1"/>
-        </div>
-        <div class="row">
-            <label for="sleep">Сон-часов</label>
-            <input id="sleep" type="number" min="0" max="24" step="0.5" placeholder="например 7.5"/>
-        </div>
-        <div class="row">
-            <label for="energy">Энергия</label>
-            <input id="energy" type="range" min="0" max="10" step="1"/>
-        </div>
-        <div class="row">
-            <label for="notes">Заметка</label>
-            <textarea id="notes" placeholder="что повлияло сегодня"></textarea>
-        </div>
+    <div class="row">
+      <label for="clarity">Ясность</label>
+      <input id="clarity" type="range" min="0" max="10" step="1"/>
     </div>
-    <div class="footer">
-        <button id="delete" class="warn">Удалить запись</button>
-        <button id="save" class="primary">Сохранить</button>
+    <div class="row">
+      <label for="fatigue">Усталость</label>
+      <input id="fatigue" type="range" min="0" max="10" step="1"/>
     </div>
+    <div class="row">
+      <label for="sleep">Сон-часов</label>
+      <input id="sleep" type="number" min="0" max="24" step="0.5" placeholder="например 7.5"/>
+    </div>
+    <div class="row">
+      <label for="energy">Энергия</label>
+      <input id="energy" type="range" min="0" max="10" step="1"/>
+    </div>
+    <div class="row">
+      <label for="notes">Заметка</label>
+      <textarea id="notes" placeholder="что повлияло сегодня"></textarea>
+    </div>
+  </div>
+  <div class="footer">
+    <button id="delete" class="warn">Удалить запись</button>
+    <button id="save" class="primary">Сохранить</button>
+  </div>
 </div>
 
 <script>
     const SKEY = 'wellness-tracker-v1';
     const $ = s => document.querySelector(s);
-    const $$ = s => document.querySelectorAll(s);
 
     // --- дата и форматирование (локальные ключи без UTC-сдвига)
     function toISO(d) {
@@ -459,7 +472,7 @@
     // init
     renderDow();
     renderCalendar();
-
+    renderSummary();
     // events
     $('#prev').addEventListener('click', () => {
         shiftMonth(-1)
@@ -500,6 +513,7 @@
             state.data = fixed;
             saveAll();
             renderCalendar();
+            renderSummary();
             alert('Импорт завершён');
         } catch {
             alert('Некорректный JSON');
@@ -621,6 +635,7 @@
         state.data[iso] = entry;
         saveAll();
         renderCalendar();
+        renderSummary();
         closeSheet();
     }
 
@@ -631,6 +646,7 @@
                 delete state.data[iso];
                 saveAll();
                 renderCalendar();
+                renderSummary();
                 closeSheet();
             }
         } else {
@@ -653,6 +669,66 @@
         const t = new Date();
         return d.getDate() === t.getDate() && d.getMonth() === t.getMonth() && d.getFullYear() === t.getFullYear();
     }
+
+    function calcRollingAvg(days = 7) {
+        const today = new Date();
+        const metrics = {clarity: [], fatigue: [], sleep: [], energy: []};
+
+        for (let i = 0; i < days; i++) {
+            const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+            const iso = toISO(d);
+            const e = state.data[iso];
+            if (!e) continue;
+
+            if (Number.isFinite(e.clarity)) metrics.clarity.push(e.clarity);
+            if (Number.isFinite(e.fatigue)) metrics.fatigue.push(e.fatigue);
+            if (e.sleep != null && Number.isFinite(Number(e.sleep))) metrics.sleep.push(Number(e.sleep));
+            if (Number.isFinite(e.energy)) metrics.energy.push(e.energy);
+        }
+
+        const avg = {};
+        for (const k of Object.keys(metrics)) {
+            const arr = metrics[k];
+            avg[k] = arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+        }
+        let filled = 0;
+        for (let i = 0; i < days; i++) {
+            const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+            const iso = toISO(d);
+            if (state.data[iso]) filled++;
+        }
+        avg._counts = {totalDays: days, filledDays: filled};
+
+        return avg;
+    }
+
+    function renderSummary() {
+        const box = document.getElementById('avgKpis');
+        if (!box) return;
+        box.innerHTML = '';
+
+        const avg = calcRollingAvg(7);
+        const pairs = [
+            ['Ясность', avg.clarity],
+            ['Усталость', avg.fatigue],
+            ['Сон', avg.sleep],
+            ['Энергия', avg.energy],
+        ];
+
+        pairs.forEach(([name, val]) => {
+            const el = document.createElement('span');
+            el.className = 'pill';
+            el.title = 'Среднее значение за последние 7 дней';
+            el.textContent = `${name}: ${val == null ? '—' : (Math.round(val * 10) / 10).toFixed(1)}`;
+            box.appendChild(el);
+        });
+
+        const covEl = document.getElementById('avgCoverage');
+        if (covEl) {
+            covEl.textContent = `заполнено: ${avg._counts.filledDays}/${avg._counts.totalDays}`;
+        }
+    }
+
 </script>
 </body>
 </html>
